@@ -12,6 +12,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject playerStage_02;
     [SerializeField] private GameObject playerStage_03;
 
+    [Header("Stage 01")]
+    private int eat_;
+
     private void Awake()
     {
         
@@ -38,6 +41,10 @@ public class PlayerController : MonoBehaviour
         if(gameController_.stageActive_ == GameController.stringStage_01)
         {
             //Input Player stage 01
+            if (Input.GetMouseButtonUp(0))
+            {
+                eat_++;
+            }
         }
     }
 
@@ -54,6 +61,23 @@ public class PlayerController : MonoBehaviour
         if (gameController_.stageActive_ == GameController.stringStage_02)
         {
             //Input Player stage 02
+            float fire = Input.GetAxisRaw("Fire1");
+            if(fire > 0)
+            {
+                MovePlayerStage2();
+            }
+        }
+    }
+
+    #endregion
+
+    #region Move Player
+
+    private void MovePlayerStage2()
+    {
+        if(LeaftWater.howClickLeaftWatter_ != null)
+        {
+            playerStage_02.transform.position = LeaftWater.howClickLeaftWatter_.transform.localPosition;
         }
     }
 
@@ -73,7 +97,7 @@ public class PlayerController : MonoBehaviour
             float fire = Input.GetAxisRaw("Fire1");
             if(fire > 0)
             {
-                MovePlayer();
+                MovePlayerStage3();
             }
         }
     }
@@ -82,7 +106,7 @@ public class PlayerController : MonoBehaviour
 
     #region Move Player System
 
-    private void MovePlayer()
+    private void MovePlayerStage3()
     {
         Rigidbody2D _rigidbody2D = playerStage_03.GetComponent<Rigidbody2D>();
         _rigidbody2D.AddForce(new Vector2(0, 10));
