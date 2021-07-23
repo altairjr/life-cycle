@@ -70,7 +70,22 @@ public class PlayerController : MonoBehaviour
         if (gameController_.stageActive_ == GameController.stringStage_03)
         {
             //Input Player stage 03
+            float fire = Input.GetAxisRaw("Fire1");
+            if(fire > 0)
+            {
+                MovePlayer();
+            }
         }
+    }
+
+    #endregion
+
+    #region Move Player System
+
+    private void MovePlayer()
+    {
+        Rigidbody2D _rigidbody2D = playerStage_03.GetComponent<Rigidbody2D>();
+        _rigidbody2D.AddForce(new Vector2(0, 10));
     }
 
     #endregion
