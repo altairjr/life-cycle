@@ -15,6 +15,9 @@ public class PlayerController : MonoBehaviour
     [Header("Stage 01")]
     private int eat_;
 
+    [Header("Stage 02")]
+    public static Transform playerTransformStage_02;
+
     private void Awake()
     {
         
@@ -27,12 +30,17 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        InputPlayerStage01();
-        InputPlayerStage02();
-        InputPlayerStage03();
+        Stage01();
+        Stage02();
+        Stage03();
     }
 
     #region Stage 01
+
+    private void Stage01()
+    {
+        InputPlayerStage01();
+    }
 
     #region InputPlayer
 
@@ -53,6 +61,12 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Stage 02
+
+    private void Stage02()
+    {
+        InputPlayerStage02();
+        GetPosition();
+    }
 
     #region InputPlayer
 
@@ -83,9 +97,23 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
+    #region GetValues
+
+    private void GetPosition()
+    {
+        playerTransformStage_02 = playerStage_02.transform;
+    }
+
+    #endregion
+
     #endregion
 
     #region Stage 03
+
+    private void Stage03()
+    {
+        InputPlayerStage03();
+    }
 
     #region InputPlayer
 

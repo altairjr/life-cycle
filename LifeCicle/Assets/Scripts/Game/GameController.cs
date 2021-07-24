@@ -15,6 +15,27 @@ public class GameController : MonoBehaviour
     public static string stringStage_02 = "stage_02";
     public static string stringStage_03 = "stage_03";
 
+    [Header("System spawn stage 02")]
+    [SerializeField] private Transform[] spawnButterflyPoints_;
+    [SerializeField] private Transform[] spawnEaglePoints_;
+
+    [Space]
+    [SerializeField] private GameObject butterflyPrefab_;
+    [SerializeField] private GameObject eaglePrefab_;
+
+    //Lista de borboletas e gaviões instaciadas
+    [Space]
+    public List<GameObject> butterflyInstaciated_ = new List<GameObject>();
+    public List<GameObject> eagleInstaciated_ = new List<GameObject>();
+
+    //Temporizador para instanciar as borboletas
+    private float couldownSpawnTimeButterfly_ = 6f;
+    private float spawnTimeButterfly_ = 0f;
+
+    //Temporizador para instanciar os gaviões
+    private float couldownSpawnTimeEagle_ = 1f;
+    private float spawnTimeEagle_ = 0f;
+
     [Header("System Spawn Stage 03")]
     [SerializeField] private Transform spawnPointSceneryUP;
     [SerializeField] private Transform spawnPointSceneryDown;
@@ -99,8 +120,45 @@ public class GameController : MonoBehaviour
         if (stageActive_ == stringStage_02)
         {
             //Stage 02
+            SpawnButterfly();
+            SpawnEagle();
         }
     }
+
+    #region Butterfly system controll
+
+    private void SpawnButterfly()
+    {
+        if(butterflyInstaciated_.Count <= 0)
+        {
+            spawnTimeButterfly_ += Time.deltaTime;
+            if(spawnTimeButterfly_ >= couldownSpawnTimeButterfly_)
+            {
+                butterflyInstaciated_.Add(Instantiate(butterflyPrefab_, spawnButterflyPoints_[Random.Range(0, spawnButterflyPoints_.Length)].transform));
+                spawnTimeButterfly_ = 0;
+            }
+        }
+    }
+
+    #endregion
+
+    #region Eagle system controll
+
+    private void SpawnEagle()
+    {
+        if (eagleInstaciated_.Count <= 1)
+        {
+            spawnTimeEagle_ += Time.deltaTime;
+            if (spawnTimeEagle_ >= couldownSpawnTimeEagle_)
+            {
+                eagleInstaciated_.Add(Instantiate(eaglePrefab_, spawnEaglePoints_[Random.Range(0, spawnEaglePoints_.Length)].localPosition, Quaternion.identity, stage_02_[0].transform.GetChild(0).transform.parent));
+                eagleInstaciated_.Add(Instantiate(eaglePrefab_, PlayerController.playerTransformStage_02.position, Quaternion.identity, stage_02_[0].transform.GetChild(0).transform.parent));
+                spawnTimeEagle_ = 0;
+            }
+        }
+    }
+
+    #endregion
 
     #endregion
 
