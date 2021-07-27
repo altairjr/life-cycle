@@ -13,20 +13,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject playerStage_03;
 
     [Header("Stage 01")]
+
     private int eat_;
+
+    private bool jump_;
+
+    [HideInInspector]
+    public bool grab_;
+
+    public static bool notClick_;
 
     [Header("Stage 02")]
     public static Transform playerTransformStage_02;
 
-    private void Awake()
-    {
-        
-    }
-
-    private void Start()
-    {
-        
-    }
+    [Header("stage 03")]
+    public float speed_;
 
     private void Update()
     {
@@ -40,6 +41,7 @@ public class PlayerController : MonoBehaviour
     private void Stage01()
     {
         InputPlayerStage01();
+        wind();
     }
 
     #region InputPlayer
@@ -49,10 +51,60 @@ public class PlayerController : MonoBehaviour
         if(gameController_.stageActive_ == GameController.stringStage_01)
         {
             //Input Player stage 01
+            float click = Input.GetAxisRaw("Fire1");
+            if(click == 0)
+            {
+                notClick_ = true;
+            }
+            else
+            {
+                notClick_ = false;
+            }
+
             if (Input.GetMouseButtonUp(0))
             {
-                eat_++;
+                Eat();
             }
+
+            if (Input.GetMouseButtonDown(1))
+            {
+                Grab();
+            }
+
+            if (Input.GetMouseButtonUp(1))
+            {
+                Grab();
+            }
+        }
+    }
+
+    #endregion
+
+    #region Controlle Player
+
+    private void Eat()
+    {
+        if (!grab_)
+        {
+            eat_++;
+            gameController_.frogAlert_ += 2;
+        }
+    }
+
+    private void Grab()
+    {
+        grab_ = !grab_;
+    }
+
+    #endregion
+
+    #region Move Player
+
+    private void wind()
+    {
+        if (gameController_.wind_ && !grab_)
+        {
+            playerStage_01.transform.Translate(0, gameController_.forceWind_ * Time.deltaTime,0);
         }
     }
 
@@ -66,6 +118,7 @@ public class PlayerController : MonoBehaviour
     {
         InputPlayerStage02();
         GetPosition();
+        SystemJump();
     }
 
     #region InputPlayer
@@ -76,7 +129,7 @@ public class PlayerController : MonoBehaviour
         {
             //Input Player stage 02
             float fire = Input.GetAxisRaw("Fire1");
-            if(fire > 0)
+            if(Input.GetMouseButtonUp(0))
             {
                 MovePlayerStage2();
             }
@@ -89,9 +142,14 @@ public class PlayerController : MonoBehaviour
 
     private void MovePlayerStage2()
     {
-        if(LeaftWater.howClickLeaftWatter_ != null)
+        jump_ = true;
+    }
+
+    private void SystemJump()
+    {
+        if(jump_ && LeaftWater.posJump_ != null)
         {
-            playerStage_02.transform.position = LeaftWater.howClickLeaftWatter_.transform.localPosition;
+            playerStage_02.transform.position = Vector2.MoveTowards(playerStage_02.transform.position, LeaftWater.posJump_.transform.position, 10 * Time.deltaTime);
         }
     }
 
@@ -123,7 +181,7 @@ public class PlayerController : MonoBehaviour
         {
             //Input Player stage 03
             float fire = Input.GetAxisRaw("Fire1");
-            if(fire > 0)
+            if(Input.GetMouseButtonDown(0))
             {
                 MovePlayerStage3();
             }
@@ -137,7 +195,7 @@ public class PlayerController : MonoBehaviour
     private void MovePlayerStage3()
     {
         Rigidbody2D _rigidbody2D = playerStage_03.GetComponent<Rigidbody2D>();
-        _rigidbody2D.AddForce(new Vector2(0, 10));
+        _rigidbody2D.velocity = (Vector2.up * speed_) * Time.deltaTime;
     }
 
     #endregion

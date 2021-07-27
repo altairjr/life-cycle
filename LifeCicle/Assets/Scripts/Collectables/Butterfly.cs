@@ -22,7 +22,6 @@ public class Butterfly : MonoBehaviour
     private Rigidbody2D rigidbody2D_;
     private GameController gameController_;
 
-    public bool rangeFrog_;
     public bool clickButterfly_;
 
     private void Awake()
@@ -38,7 +37,7 @@ public class Butterfly : MonoBehaviour
     private void Update()
     {
         MoveButterfly();
-        CheckRange();
+        ChangeClick();
         Collectable();
     }
 
@@ -74,40 +73,18 @@ public class Butterfly : MonoBehaviour
         clickButterfly_ = true;
     }
 
-    private void CheckRange()
+    private void ChangeClick()
     {
-        if (!rangeFrog_)
-        {
+        if (!gameController_.range_)
             clickButterfly_ = false;
-        }
     }
 
     private void Collectable()
     {
-        if (clickButterfly_)
+        if (clickButterfly_ && gameController_.range_ && LeaftWater.stayLeaftWater_)
         {
             gameController_.butterflyInstaciated_.Remove(gameObject);
             Destroy(gameObject);
         }
     }
-
-    #region System Trigger
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.name.Equals(FrogPlayerName_))
-        {
-            rangeFrog_ = true;
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D collision)
-    {
-        if (collision.name.Equals(FrogPlayerName_))
-        {
-            rangeFrog_ = false;
-        }
-    }
-
-    #endregion
 }

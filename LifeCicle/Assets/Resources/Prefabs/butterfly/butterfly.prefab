@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 5179407530995335006}
   - component: {fileID: 4732977612917102559}
   - component: {fileID: 4859930765556492599}
-  - component: {fileID: -7591628560053782302}
   m_Layer: 0
   m_Name: butterfly
   m_TagString: Untagged
@@ -53,6 +52,8 @@ MonoBehaviour:
   leaftWater_04_: LeaftWater_04_point
   FrogPlayerName_: FrogPlayer
   speed_: 5
+  rangeFrog_: 0
+  clickButterfly_: 0
 --- !u!50 &4732977612917102559
 Rigidbody2D:
   serializedVersion: 4
@@ -100,22 +101,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!58 &-7591628560053782302
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6300870729008175550}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 1.5
 --- !u!1 &8625577952524072564
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,6 +15,25 @@ public class GameController : MonoBehaviour
     public static string stringStage_02 = "stage_02";
     public static string stringStage_03 = "stage_03";
 
+    [Header("System Stage 01")]
+    [SerializeField] private GameObject frog_;
+    [SerializeField] private Transform[] frogAlertPositions_;
+    public float forceWind_;
+
+    private float couldownTimeWind_ = 5f;
+    private float timeWind_ = 0f;
+    private float durationTimeWind_ = 2f;
+    private float durationWind_ = 0f;
+
+    private float couldownTimeClear_ = 2f;
+    private float timeClear_ = 0f;
+
+    [HideInInspector]
+    public bool wind_;
+
+    //[HideInInspector]
+    public int frogAlert_;
+
     [Header("System spawn stage 02")]
     [SerializeField] private Transform[] spawnButterflyPoints_;
     [SerializeField] private Transform[] spawnEaglePoints_;
@@ -33,8 +52,20 @@ public class GameController : MonoBehaviour
     private float spawnTimeButterfly_ = 0f;
 
     //Temporizador para instanciar os gaviões
-    private float couldownSpawnTimeEagle_ = 1f;
-    private float spawnTimeEagle_ = 0f;
+    private float couldownSpawnTimeEagle_01_ = 1f;
+    private float couldownSpawnTimeEagle_02_ = 1f;
+    private float couldownSpawnTimeEagle_03_ = 1f;
+    private float spawnTimeEagle_01_ = 0f;
+    private float spawnTimeEagle_02_ = 0f;
+    private float spawnTimeEagle_03_ = 0f;
+
+    //Range Frog
+    [Header("Sysmte range frog")]
+    [SerializeField] GameObject playerFrogStage_02;
+    public bool range_;
+
+    private float distance_;
+    private float maxDistance_ = 2.2f;
 
     [Header("System Spawn Stage 03")]
     [SerializeField] private Transform spawnPointSceneryUP;
@@ -50,11 +81,6 @@ public class GameController : MonoBehaviour
     //Temporizador do chão sendo spawnado stage 03
     private float couldownSpawnTimeScenery = 1.5f;
     private float spawnTimeScenery = 0;
-
-    private void Awake()
-    {
-        
-    }
 
     private void Update()
     {
@@ -108,8 +134,90 @@ public class GameController : MonoBehaviour
         if (stageActive_ == stringStage_01)
         {
             //Stage 01
+            Frog();
+            Wind();
         }
     }
+
+    #region Controller Frog
+
+    private void Frog()
+    {
+        if (PlayerController.notClick_)
+        {
+            timeClear_ += Time.deltaTime;
+        }
+        else
+        {
+            timeClear_ = 0;
+        }
+
+        if(timeClear_ >= couldownTimeClear_)
+        {
+            timeClear_ = 0;
+            frogAlert_ = 0;
+        }
+
+        if(frogAlert_ < 25)
+        {
+            //pos start
+            frog_.transform.localPosition = Vector2.MoveTowards(frog_.transform.localPosition, frogAlertPositions_[0].transform.localPosition, 1 * Time.deltaTime);
+        }
+
+        if(frogAlert_ >= 25 && frogAlert_ < 50)
+        {
+            //Eye
+        }
+        
+        if(frogAlert_ >= 50 && frogAlert_ < 75)
+        {
+            //pos1
+            frog_.transform.localPosition = Vector2.MoveTowards(frog_.transform.localPosition, frogAlertPositions_[1].transform.localPosition, 1 * Time.deltaTime);
+        }
+
+        if (frogAlert_ >= 75 && frogAlert_ < 100)
+        {
+            //pos2
+            frog_.transform.localPosition = Vector2.MoveTowards(frog_.transform.localPosition, frogAlertPositions_[2].transform.localPosition, 1 * Time.deltaTime);
+        }
+
+        if (frogAlert_ >= 100)
+        {
+            //pos final
+        }
+    }
+
+    #endregion
+
+    #region Controller Wind
+
+    private void Wind()
+    {
+        if (!wind_)
+        {
+            timeWind_ += Time.deltaTime;
+        }
+        else
+        {
+            durationWind_ += Time.deltaTime;
+        }
+        
+        if(timeWind_ >= couldownTimeWind_)
+        {
+            couldownTimeWind_ = Random.Range(5, 10);
+            timeWind_ = 0;
+            wind_ = true;
+        }
+
+        if(durationWind_ >= durationTimeWind_)
+        {
+            durationTimeWind_ = Random.Range(3, 6);
+            durationWind_ = 0;
+            wind_ = false;
+        }
+    }
+
+    #endregion
 
     #endregion
 
@@ -122,6 +230,7 @@ public class GameController : MonoBehaviour
             //Stage 02
             SpawnButterfly();
             SpawnEagle();
+            CheckRangeFrogPlayerAndButterfly();
         }
     }
 
@@ -140,6 +249,27 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void CheckRangeFrogPlayerAndButterfly()
+    {
+
+        if(butterflyInstaciated_.Count > 0)
+        {
+            distance_ = Vector2.Distance(playerFrogStage_02.transform.position, butterflyInstaciated_[0].transform.position);
+            if(distance_ != 0)
+            {
+                if(distance_ <= maxDistance_)
+                {
+                    range_ = true;
+                }
+
+                if(distance_ > maxDistance_)
+                {
+                    range_ = false;
+                }
+            }
+        }
+    }
+
     #endregion
 
     #region Eagle system controll
@@ -148,12 +278,28 @@ public class GameController : MonoBehaviour
     {
         if (eagleInstaciated_.Count <= 1)
         {
-            spawnTimeEagle_ += Time.deltaTime;
-            if (spawnTimeEagle_ >= couldownSpawnTimeEagle_)
+            spawnTimeEagle_01_ += Time.deltaTime;
+            spawnTimeEagle_02_ += Time.deltaTime;
+            spawnTimeEagle_03_ += Time.deltaTime;
+            if (spawnTimeEagle_01_ >= couldownSpawnTimeEagle_01_)
             {
+                couldownSpawnTimeEagle_01_ = Random.Range(0.5f, 1.5f);
                 eagleInstaciated_.Add(Instantiate(eaglePrefab_, spawnEaglePoints_[Random.Range(0, spawnEaglePoints_.Length)].localPosition, Quaternion.identity, stage_02_[0].transform.GetChild(0).transform.parent));
-                eagleInstaciated_.Add(Instantiate(eaglePrefab_, PlayerController.playerTransformStage_02.position, Quaternion.identity, stage_02_[0].transform.GetChild(0).transform.parent));
-                spawnTimeEagle_ = 0;
+                spawnTimeEagle_01_ = 0;
+            }
+
+            if (spawnTimeEagle_02_ >= couldownSpawnTimeEagle_02_)
+            {
+                couldownSpawnTimeEagle_02_ = Random.Range(0.5f, 1.5f);
+                eagleInstaciated_.Add(Instantiate(eaglePrefab_, spawnEaglePoints_[Random.Range(0, spawnEaglePoints_.Length)].localPosition, Quaternion.identity, stage_02_[0].transform.GetChild(0).transform.parent));
+                spawnTimeEagle_02_ = 0;
+            }
+
+            if (spawnTimeEagle_03_ >= couldownSpawnTimeEagle_03_)
+            {
+                couldownSpawnTimeEagle_03_ = Random.Range(0.5f, 1.5f);
+                eagleInstaciated_.Add(Instantiate(eaglePrefab_, spawnEaglePoints_[Random.Range(0, spawnEaglePoints_.Length)].localPosition, Quaternion.identity, stage_02_[0].transform.GetChild(0).transform.parent));
+                spawnTimeEagle_03_ = 0;
             }
         }
     }
