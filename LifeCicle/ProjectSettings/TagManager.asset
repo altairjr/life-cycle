@@ -42,3 +42,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: frog
+    uniqueID: 94153803
+    locked: 0
+  - name: UI
+    uniqueID: 230942493
+    locked: 0

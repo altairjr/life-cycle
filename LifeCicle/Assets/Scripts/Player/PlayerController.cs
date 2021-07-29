@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,11 +13,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject playerStage_02;
     [SerializeField] private GameObject playerStage_03;
 
+    [Header("UI Stage 01")]
+    [SerializeField] private Image barFill_;
+
     [Header("Stage 01")]
+    [SerializeField] private GameObject pivotPlayerStage_01;
 
-    private int eat_;
+    private float eanting_ = 0f;
+    private float eantingMax_ = 100f;
 
+    public float timeNoClick = 0f;
+    private float MaxTimeNoClick = 2f;
+
+    private bool eat_;
     private bool jump_;
+    public bool eatingDown = false;
 
     [HideInInspector]
     public bool grab_;
@@ -39,42 +50,61 @@ public class PlayerController : MonoBehaviour
     #region Stage 01
 
     private void Stage01()
-    {
-        InputPlayerStage01();
-        wind();
+    {   
+        if (gameController_.stageActive_ == GameController.stringStage_01)
+        {
+            InputPlayerStage01();
+            wind();
+            AnimationGrab();
+            AnimationEat();
+            BarrFillMet();
+            WormDeath();
+            Met();
+            ButterflyDeath();
+        }
     }
 
     #region InputPlayer
 
     private void InputPlayerStage01()
     {
-        if(gameController_.stageActive_ == GameController.stringStage_01)
+        //Input Player stage 01
+
+        float _click = Input.GetAxisRaw("Fire1");
+        Debug.Log(notClick_);
+
+        if (_click == 0)
         {
-            //Input Player stage 01
-            float click = Input.GetAxisRaw("Fire1");
-            if(click == 0)
-            {
-                notClick_ = true;
-            }
-            else
-            {
-                notClick_ = false;
-            }
+            notClick_ = true;
+        }
+        else
+        {
+            notClick_ = false;
+        }
 
-            if (Input.GetMouseButtonUp(0))
-            {
-                Eat();
-            }
+        if (Input.GetMouseButtonDown(0))
+        {
+            Eat();
+        }
 
-            if (Input.GetMouseButtonDown(1))
-            {
-                Grab();
-            }
+        if (Input.GetMouseButtonUp(0))
+        {
+            Eat();
+        }
 
-            if (Input.GetMouseButtonUp(1))
-            {
-                Grab();
-            }
+        if (Input.GetMouseButtonDown(1))
+        {
+            Grab();
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            Grab();
+        }
+
+        if (Input.GetMouseButtonDown(0) && Input.GetMouseButtonDown(1))
+        {
+            notClick_ = false;
         }
     }
 
@@ -84,16 +114,92 @@ public class PlayerController : MonoBehaviour
 
     private void Eat()
     {
-        if (!grab_)
+        if (!grab_ && gameController_.wormDeath_ == false && gameController_.butterflyDeath_ == false)
         {
-            eat_++;
-            gameController_.frogAlert_ += 2;
+            eanting_ += 0.3f;
+            gameController_.frogAlert_++;
         }
+        eat_ = !eat_;
     }
 
     private void Grab()
     {
         grab_ = !grab_;
+    }
+
+    private void BarrFillMet()
+    {
+        float _eatPercent = eanting_ / eantingMax_;
+        barFill_.fillAmount = _eatPercent;
+
+
+        if (notClick_ == true || grab_ == true)
+        {
+            timeNoClick += Time.deltaTime;
+        }
+        else
+        {
+            timeNoClick = 0;
+            eatingDown = false;
+        }
+
+        if(timeNoClick >= MaxTimeNoClick)
+        {
+            timeNoClick = 0;
+            eatingDown = true;
+        }
+
+        if (eatingDown && gameController_.wormDeath_ == false && gameController_.butterflyDeath_ == false)
+        {
+            eanting_ -= 0.02f;
+        }
+    }
+
+    private void  WormDeath()
+    {
+        if (gameController_.wormDeath_ == true)
+        {
+            pivotPlayerStage_01.SetActive(false);
+        }
+    }
+
+    private void Met()
+    {
+        if(eanting_ >= eantingMax_)
+        {
+            eanting_ = eantingMax_;
+            gameController_.butterflyDeath_ = true;
+        }
+    }
+
+    private void ButterflyDeath()
+    {
+        if(gameController_.butterflyDeath_ == true)
+        {
+            pivotPlayerStage_01.SetActive(false);
+        }
+    }
+
+    private void AnimationEat()
+    {
+        Animator _animator = playerStage_01.GetComponent<Animator>();
+        string _parameter = "eat";
+
+        if (eat_)
+            _animator.SetBool(_parameter, true);
+        else
+            _animator.SetBool(_parameter, false);
+    }
+
+    private void AnimationGrab()
+    {
+        Animator _animator = playerStage_01.GetComponent<Animator>();
+        string _parameter = "grab";
+
+        if (grab_)
+            _animator.SetBool(_parameter, true);
+        else
+            _animator.SetBool(_parameter, false);
     }
 
     #endregion
@@ -102,12 +208,12 @@ public class PlayerController : MonoBehaviour
 
     private void wind()
     {
-        if (gameController_.wind_ && !grab_)
+        if (gameController_.wind_ && !grab_ && !WormLimitLeaft.limitOverLeaft_)
         {
-            playerStage_01.transform.Translate(0, gameController_.forceWind_ * Time.deltaTime,0);
+            playerStage_01.transform.Translate(0, gameController_.forceWind_ * Time.deltaTime, 0);
         }
     }
-
+    
     #endregion
 
     #endregion

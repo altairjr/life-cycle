@@ -11,6 +11,9 @@ public class GameController : MonoBehaviour
 
     public string stageActive_;
 
+    private float timeChangeStage_ = 0f;
+    private float maxTimeChangeStage_ = 2f;
+
     public static string stringStage_01 = "stage_01";
     public static string stringStage_02 = "stage_02";
     public static string stringStage_03 = "stage_03";
@@ -18,6 +21,10 @@ public class GameController : MonoBehaviour
     [Header("System Stage 01")]
     [SerializeField] private GameObject frog_;
     [SerializeField] private Transform[] frogAlertPositions_;
+    [SerializeField] private GameObject UIAlertWind_;
+    [SerializeField] private GameObject frogEatWorm_;
+    [SerializeField] private GameObject frogEatButterfly_;
+    [SerializeField] private GameObject plant_;
     public float forceWind_;
 
     private float couldownTimeWind_ = 5f;
@@ -31,8 +38,17 @@ public class GameController : MonoBehaviour
     [HideInInspector]
     public bool wind_;
 
-    //[HideInInspector]
+    [HideInInspector]
+    public bool playSoundwind_;
+
+    [HideInInspector]
     public int frogAlert_;
+
+    [HideInInspector]
+    public bool wormDeath_;
+
+    [HideInInspector]
+    public bool butterflyDeath_;
 
     [Header("System spawn stage 02")]
     [SerializeField] private Transform[] spawnButterflyPoints_;
@@ -125,6 +141,32 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void LevelUPStage01()
+    {
+        if(wormDeath_ == true || butterflyDeath_ == true)
+        {
+            timeChangeStage_ += Time.deltaTime;
+        }
+
+        if (wormDeath_ == true)
+        {
+            if (timeChangeStage_ >= maxTimeChangeStage_)
+            {
+                timeChangeStage_ = 0;
+                ChangeStage(stage_02_[0], stage_02_[1]);
+            }
+        }
+
+        if (butterflyDeath_ == true)
+        {
+            if (timeChangeStage_ >= (maxTimeChangeStage_ + 3.5f))
+            {
+                timeChangeStage_ = 0;
+                ChangeStage(stage_02_[0], stage_02_[1]);
+            }
+        }
+    }
+
     #endregion
 
     #region Stage 01
@@ -136,6 +178,8 @@ public class GameController : MonoBehaviour
             //Stage 01
             Frog();
             Wind();
+            ButterlfyDeath();
+            LevelUPStage01();
         }
     }
 
@@ -162,11 +206,13 @@ public class GameController : MonoBehaviour
         {
             //pos start
             frog_.transform.localPosition = Vector2.MoveTowards(frog_.transform.localPosition, frogAlertPositions_[0].transform.localPosition, 1 * Time.deltaTime);
+            frog_.transform.GetChild(0).gameObject.SetActive(true);
         }
 
         if(frogAlert_ >= 25 && frogAlert_ < 50)
         {
             //Eye
+            frog_.transform.GetChild(0).gameObject.SetActive(false);
         }
         
         if(frogAlert_ >= 50 && frogAlert_ < 75)
@@ -184,6 +230,27 @@ public class GameController : MonoBehaviour
         if (frogAlert_ >= 100)
         {
             //pos final
+            frogEatWorm_.SetActive(true);
+            frog_.SetActive(false);
+            plant_.SetActive(false);
+            wormDeath_ = true;
+        }
+
+        if (WormLimitLeaft.limitOverLeaft_)
+        {
+            frogEatWorm_.SetActive(true);
+            frog_.SetActive(false);
+            plant_.SetActive(false);
+            wormDeath_ = true;
+        }
+    }
+
+    private void ButterlfyDeath()
+    {
+        if(butterflyDeath_ == true)
+        {
+            frog_.SetActive(false);
+            frogEatButterfly_.SetActive(true);
         }
     }
 
@@ -193,27 +260,53 @@ public class GameController : MonoBehaviour
 
     private void Wind()
     {
-        if (!wind_)
+        if(wormDeath_ == false || butterflyDeath_ == false)
         {
-            timeWind_ += Time.deltaTime;
-        }
-        else
-        {
-            durationWind_ += Time.deltaTime;
-        }
-        
-        if(timeWind_ >= couldownTimeWind_)
-        {
-            couldownTimeWind_ = Random.Range(5, 10);
-            timeWind_ = 0;
-            wind_ = true;
-        }
+            if (!wind_)
+            {
+                timeWind_ += Time.deltaTime;
+            }
+            else
+            {
+                durationWind_ += Time.deltaTime;
+            }
 
-        if(durationWind_ >= durationTimeWind_)
-        {
-            durationTimeWind_ = Random.Range(3, 6);
-            durationWind_ = 0;
-            wind_ = false;
+            if (timeWind_ >= (couldownTimeWind_ - 1))
+            {
+                UIAlertWind_.SetActive(true);
+                playSoundwind_ = true;
+            }
+
+            if (timeWind_ >= couldownTimeWind_)
+            {
+                couldownTimeWind_ = Random.Range(5, 10);
+                timeWind_ = 0;
+                wind_ = true;
+            }
+
+            if (durationWind_ >= durationTimeWind_)
+            {
+                durationTimeWind_ = Random.Range(3, 6);
+                UIAlertWind_.SetActive(false);
+                durationWind_ = 0;
+                wind_ = false;
+            }
+
+            if (wind_)
+            {
+                string _parameterPlant = "wind";
+                Animator _anmiatorPlant = plant_.GetComponent<Animator>();
+
+                _anmiatorPlant.SetBool(_parameterPlant, true);
+            }
+            else
+            {
+                string _parameter = "wind";
+                Animator _anmiator = plant_.GetComponent<Animator>();
+
+                _anmiator.SetBool(_parameter, false);
+                playSoundwind_ = false;
+            }
         }
     }
 
