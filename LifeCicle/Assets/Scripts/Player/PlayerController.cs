@@ -71,7 +71,6 @@ public class PlayerController : MonoBehaviour
         //Input Player stage 01
 
         float _click = Input.GetAxisRaw("Fire1");
-        Debug.Log(notClick_);
 
         if (_click == 0)
         {

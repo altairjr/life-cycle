@@ -25,6 +25,7 @@ public class GameController : MonoBehaviour
     [SerializeField] private GameObject frogEatWorm_;
     [SerializeField] private GameObject frogEatButterfly_;
     [SerializeField] private GameObject plant_;
+    [SerializeField] private GameObject light_;
     public float forceWind_;
 
     private float couldownTimeWind_ = 5f;
@@ -251,6 +252,7 @@ public class GameController : MonoBehaviour
         {
             frog_.SetActive(false);
             frogEatButterfly_.SetActive(true);
+            light_.SetActive(false);
         }
     }
 
