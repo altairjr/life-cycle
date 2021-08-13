@@ -36,21 +36,51 @@ public class PlayerController : MonoBehaviour
 
     [Header("Stage 02")]
     public static Transform playerTransformStage_02;
+    public static bool clickForTutorial_;
 
     [Header("stage 03")]
     public float speed_;
 
+    public static bool eaglePlayerDeath_;
+
     private void Update()
     {
+        Return();
+        if (MenuController.pauseGame_)
+            return;
+
         Stage01();
         Stage02();
         Stage03();
     }
 
+    private void Return()
+    {
+        if (MenuController.returMenu_)
+        {
+            MenuController.pauseGame_ = false;
+            eanting_ = 0;
+            grab_ = false;
+            pivotPlayerStage_01.SetActive(true);
+            playerStage_01.transform.position = pivotPlayerStage_01.transform.position;
+            clickForTutorial_ = false;
+            clickForTutorial_ = false;
+            jump_ = false;
+            eaglePlayerDeath_ = false;
+
+            playerStage_02.transform.position = new Vector2(0, -3.12f);
+            playerStage_02.transform.rotation = Quaternion.Euler(0, 0, 0);
+
+            playerStage_03.transform.position = new Vector2(-5.45f, 2.18f);
+            playerStage_03.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezeRotation;
+            playerStage_03.GetComponent<BoxCollider2D>().enabled = true;
+        }
+    }
+
     #region Stage 01
 
     private void Stage01()
-    {   
+    {
         if (gameController_.stageActive_ == GameController.stringStage_01)
         {
             InputPlayerStage01();
@@ -88,7 +118,7 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetMouseButtonUp(0))
         {
-            Eat();
+            eat_ = false;
         }
 
         if (Input.GetMouseButtonDown(1))
@@ -115,8 +145,8 @@ public class PlayerController : MonoBehaviour
     {
         if (!grab_ && gameController_.wormDeath_ == false && gameController_.butterflyDeath_ == false)
         {
-            eanting_ += 0.3f;
-            gameController_.frogAlert_++;
+            eanting_ += 0.4f;
+            gameController_.frogAlert_ += 2;
         }
         eat_ = !eat_;
     }
@@ -142,7 +172,7 @@ public class PlayerController : MonoBehaviour
             eatingDown = false;
         }
 
-        if(timeNoClick >= MaxTimeNoClick)
+        if (timeNoClick >= MaxTimeNoClick)
         {
             timeNoClick = 0;
             eatingDown = true;
@@ -150,21 +180,25 @@ public class PlayerController : MonoBehaviour
 
         if (eatingDown && gameController_.wormDeath_ == false && gameController_.butterflyDeath_ == false)
         {
-            eanting_ -= 0.02f;
+            eanting_ -= 0.01f;
         }
     }
 
-    private void  WormDeath()
+    private void WormDeath()
     {
         if (gameController_.wormDeath_ == true)
         {
             pivotPlayerStage_01.SetActive(false);
         }
+        else
+        {
+            pivotPlayerStage_01.SetActive(true);
+        }
     }
 
     private void Met()
     {
-        if(eanting_ >= eantingMax_)
+        if (eanting_ >= eantingMax_)
         {
             eanting_ = eantingMax_;
             gameController_.butterflyDeath_ = true;
@@ -173,9 +207,13 @@ public class PlayerController : MonoBehaviour
 
     private void ButterflyDeath()
     {
-        if(gameController_.butterflyDeath_ == true)
+        if (gameController_.butterflyDeath_ == true)
         {
             pivotPlayerStage_01.SetActive(false);
+        }
+        else
+        {
+            pivotPlayerStage_01.SetActive(true);
         }
     }
 
@@ -212,7 +250,18 @@ public class PlayerController : MonoBehaviour
             playerStage_01.transform.Translate(0, gameController_.forceWind_ * Time.deltaTime, 0);
         }
     }
-    
+
+    #endregion
+
+    #region Get Values
+
+    public float GetValue ()
+    {
+        float getValue = 0;
+        getValue = eanting_;
+        return (getValue);
+    }
+
     #endregion
 
     #endregion
@@ -248,13 +297,34 @@ public class PlayerController : MonoBehaviour
     private void MovePlayerStage2()
     {
         jump_ = true;
+        clickForTutorial_ = true;
     }
 
     private void SystemJump()
     {
         if(jump_ && LeaftWater.posJump_ != null)
         {
+            string _parameter = "jump";
+            Animator _animator = playerStage_02.transform.GetChild(0).gameObject.GetComponent<Animator>();
             playerStage_02.transform.position = Vector2.MoveTowards(playerStage_02.transform.position, LeaftWater.posJump_.transform.position, 10 * Time.deltaTime);
+
+            Rigidbody2D _rigidbody2D = playerStage_02.GetComponent<Rigidbody2D>();
+
+            Vector2 lookDir = playerStage_02.transform.position - LeaftWater.posJump_.transform.position;
+            float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg + 90f;
+            _rigidbody2D.rotation = angle;
+
+            _animator.SetBool(_parameter, true);
+        }
+
+        if(LeaftWater.posJump_ != null)
+        {
+            if (playerStage_02.transform.position == LeaftWater.posJump_.transform.position)
+            {
+                string _parameter = "jump";
+                Animator _animator = playerStage_02.transform.GetChild(0).gameObject.GetComponent<Animator>();
+                _animator.SetBool(_parameter, false);
+            }
         }
     }
 
@@ -275,7 +345,10 @@ public class PlayerController : MonoBehaviour
 
     private void Stage03()
     {
-        InputPlayerStage03();
+        PlayerDeath();
+
+        if (eaglePlayerDeath_ == false)
+            InputPlayerStage03();
     }
 
     #region InputPlayer
@@ -290,6 +363,13 @@ public class PlayerController : MonoBehaviour
             {
                 MovePlayerStage3();
             }
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                string _parameterFly = "fly";
+                Animator _animator = playerStage_03.transform.GetChild(0).gameObject.GetComponent<Animator>();
+                _animator.SetBool(_parameterFly, false);
+            }
         }
     }
 
@@ -300,7 +380,22 @@ public class PlayerController : MonoBehaviour
     private void MovePlayerStage3()
     {
         Rigidbody2D _rigidbody2D = playerStage_03.GetComponent<Rigidbody2D>();
-        _rigidbody2D.velocity = (Vector2.up * speed_) * Time.deltaTime;
+        _rigidbody2D.velocity = Vector2.zero;
+        _rigidbody2D.AddForce(new Vector2(0, speed_));
+
+        string _parameterFly = "fly";
+        Animator _animator = playerStage_03.transform.GetChild(0).gameObject.GetComponent<Animator>();
+        _animator.SetBool(_parameterFly, true);
+    }
+
+    private void PlayerDeath()
+    {
+        if (eaglePlayerDeath_)
+        {
+            Rigidbody2D _rigidbody2D = playerStage_03.GetComponent<Rigidbody2D>();
+
+            playerStage_03.GetComponent<BoxCollider2D>().enabled = false;
+        }
     }
 
     #endregion

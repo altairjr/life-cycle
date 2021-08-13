@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - FindZone
+  - FrogStage03
+  - ObstaclesStage03
   layers:
   - Default
   - TransparentFX

@@ -18,7 +18,17 @@ public class Ground : MonoBehaviour
 
     private void Update()
     {
-        MoveGround();   
+        if (MenuController.returMenu_)
+            return;
+
+        if (MenuController.pauseGame_)
+            return;
+
+        CheckPlayerDeath();
+        if (PlayerController.eaglePlayerDeath_)
+            return;
+
+            MoveGround();
     }
 
     #region SetComponent
@@ -41,6 +51,14 @@ public class Ground : MonoBehaviour
         rigidbody2D_.velocity = new Vector2(-5, 0);
     }
 
+    private void CheckPlayerDeath()
+    {
+        if (PlayerController.eaglePlayerDeath_)
+        {
+            rigidbody2D_.velocity = new Vector2(0, 0);
+        }
+    }
+
     #endregion
 
     #region System Trigger
@@ -49,20 +67,7 @@ public class Ground : MonoBehaviour
     {
         if (collision.CompareTag(tagFindZone_))
         {
-            for(int i = 0; i <= 0; i++)
-            {
-                if(gameObject == gameController_.groundsInstaciatedDown_[i])
-                {
-                    gameController_.groundsInstaciatedDown_.Remove(gameObject);
-                    Destroy(gameObject);
-                }
-
-                if (gameObject == gameController_.groundsInstaciatedUP_[i])
-                {
-                    gameController_.groundsInstaciatedUP_.Remove(gameObject);
-                    Destroy(gameObject);
-                }
-            }
+            Destroy(gameObject);
         }
     }
 

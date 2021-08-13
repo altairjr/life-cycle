@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     [Header("System Controll Stages")]
+    [SerializeField] private GameObject[] mainMenu_;
     [SerializeField] private GameObject[] stage_01_;
     [SerializeField] private GameObject[] stage_02_;
     [SerializeField] private GameObject[] stage_03_;
@@ -14,9 +15,16 @@ public class GameController : MonoBehaviour
     private float timeChangeStage_ = 0f;
     private float maxTimeChangeStage_ = 2f;
 
+    public static string stringStageMainMenu = "mainMenu";
+    public static string stringStageTutorial = "tutorial";
     public static string stringStage_01 = "stage_01";
     public static string stringStage_02 = "stage_02";
     public static string stringStage_03 = "stage_03";
+
+    public static bool playTutorial01_;
+    public static bool playTutorial02_;
+    public static bool playTutorial03_;
+    public static bool playTutorial04_;
 
     [Header("System Stage 01")]
     [SerializeField] private GameObject frog_;
@@ -71,18 +79,17 @@ public class GameController : MonoBehaviour
     //Temporizador para instanciar os gaviões
     private float couldownSpawnTimeEagle_01_ = 1f;
     private float couldownSpawnTimeEagle_02_ = 1f;
-    private float couldownSpawnTimeEagle_03_ = 1f;
     private float spawnTimeEagle_01_ = 0f;
     private float spawnTimeEagle_02_ = 0f;
-    private float spawnTimeEagle_03_ = 0f;
 
     //Range Frog
     [Header("Sysmte range frog")]
     [SerializeField] GameObject playerFrogStage_02;
     public bool range_;
 
-    private float distance_;
-    private float maxDistance_ = 2.2f;
+    [Header("Distance")]
+    public float distance_;
+    public float maxDistance_ = 2.2f;
 
     [Header("System Spawn Stage 03")]
     [SerializeField] private Transform spawnPointSceneryUP;
@@ -90,6 +97,7 @@ public class GameController : MonoBehaviour
 
     [Space]
     [SerializeField] private List<GameObject> grounds_ = new List<GameObject>();
+    [SerializeField] private List<GameObject> galhos_ = new List<GameObject>();
 
     //Lista de quantos intens de chão vou instaciado
     public List<GameObject> groundsInstaciatedUP_ = new List<GameObject>();
@@ -102,6 +110,18 @@ public class GameController : MonoBehaviour
     private void Update()
     {
         CheckStage();
+        ChangeMainMenu();
+        Return();
+
+        if (MenuController.pauseGame_)
+            return;
+
+        StartGameAfterTutorial();
+        AffterTutorial02();
+        AffterTutorial03();
+        AffterTutorial04();
+        GameOver();
+
         stage01();
         stage02();
         stage03();
@@ -111,6 +131,8 @@ public class GameController : MonoBehaviour
 
     private void ChangeStage(GameObject _stage_enviroment, GameObject _stage_player)
     {
+        mainMenu_[0].SetActive(false);
+
         stage_01_[0].SetActive(false);
         stage_01_[1].SetActive(false);
 
@@ -126,6 +148,16 @@ public class GameController : MonoBehaviour
 
     private void CheckStage()
     {
+        if (MenuController.returMenu_)
+        {
+            stageActive_ = stringStageMainMenu;
+        }
+
+        if(mainMenu_[0].activeInHierarchy == true)
+        {
+            stageActive_ = stringStageMainMenu;
+        }
+
         if (stage_01_[0].activeInHierarchy == true && stage_01_[1].activeInHierarchy == true)
         {
             stageActive_ = stringStage_01;
@@ -142,6 +174,152 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void Return()
+    {
+        if (MenuController.returMenu_)
+        {
+            stageActive_ = stringStageMainMenu;
+            ChangeStage(mainMenu_[0], mainMenu_[0]);
+            wormDeath_ = false;
+            butterflyDeath_ = false;
+
+            frogEatWorm_.SetActive(false);
+            frog_.SetActive(true);
+            plant_.SetActive(true);
+            frogEatButterfly_.SetActive(false);
+            light_.SetActive(true);
+            frogAlert_ = 0;
+            wind_ = false;
+            timeWind_ = 0;
+            durationWind_ = 0;
+            spawnTimeScenery = 0;
+            Tutorial.tutorView_ = 0;
+            Eagle_stage_02.grabFrog_ = false;
+            playerFrogStage_02.SetActive(true);
+            timeChangeStage_ = 0;
+            playTutorial01_ = false;
+            playTutorial02_ = false;
+            playTutorial03_ = false;
+            playTutorial04_ = false;
+
+            LeaftWater.posJump_ = null;
+            LeaftWater.howClickLeaftWatter_ = null;
+            LeaftWater.stayLeaftWater_ = false;
+            LeaftWater.canJump_ = true;
+
+            Tutorial.tutorial01Complet_ = false;
+            Tutorial.tutorial02Complet_ = false;
+            Tutorial.tutorial03Complet_ = false;
+            Tutorial.tutorial04Complet_ = false;
+
+            spawnTimeEagle_01_ = 0;
+            spawnTimeEagle_02_ = 0;
+            spawnTimeButterfly_ = 0;
+
+            if (eagleInstaciated_.Count > 0)
+            {
+                Destroy(eagleInstaciated_[0]);
+                eagleInstaciated_.Clear();
+            }
+
+            if (butterflyInstaciated_.Count > 0)
+            {
+                Destroy(butterflyInstaciated_[0]);
+                butterflyInstaciated_.Clear();
+            }
+
+            if (groundsInstaciatedDown_.Count > 0)
+            {
+                for(int i = 0; i < groundsInstaciatedDown_.Count; i++)
+                {
+                    Destroy(groundsInstaciatedDown_[i]);
+                }
+                groundsInstaciatedDown_.Clear();
+            }
+
+            if (groundsInstaciatedUP_.Count > 0)
+            {
+                for (int i = 0; i < groundsInstaciatedUP_.Count; i++)
+                {
+                    Destroy(groundsInstaciatedUP_[i]);
+                }
+                groundsInstaciatedUP_.Clear();
+            }
+
+            frog_.transform.localPosition = frogAlertPositions_[0].transform.localPosition;
+            MenuController.returMenu_ = false;
+            MenuController.pauseGame_ = false;
+        }
+    }
+
+    private void ChangeMainMenu()
+    {
+        if(stageActive_ == stringStageMainMenu)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (MenuController.returMenu_ == true)
+                    MenuController.returMenu_ = false;
+
+                stageActive_ = stringStageTutorial;
+                mainMenu_[0].SetActive(false);
+                playTutorial01_ = true;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Application.Quit();
+            }
+        }
+    }
+
+    private void StartGameAfterTutorial()
+    {
+        if (Tutorial.tutorial01Complet_)
+        {
+            if (stage_01_[0].activeInHierarchy == false && stage_01_[1].activeInHierarchy == false)
+            {
+                Tutorial.tutorial01Complet_ = false;
+                ChangeStage(stage_01_[0], stage_01_[1]);
+            }
+        }
+    }
+
+    private void AffterTutorial02()
+    {
+        if (Tutorial.tutorial02Complet_)
+        {
+            if (stage_02_[0].activeInHierarchy == false && stage_02_[1].activeInHierarchy == false)
+            {
+                Tutorial.tutorial02Complet_ = false;
+                ChangeStage(stage_02_[0], stage_02_[1]);
+            }
+        }
+    }
+
+    private void AffterTutorial03()
+    {
+        if (Tutorial.tutorial03Complet_)
+        {
+            if (stage_03_[0].activeInHierarchy == false && stage_03_[1].activeInHierarchy == false)
+            {
+                Tutorial.tutorial03Complet_ = false;
+                ChangeStage(stage_03_[0], stage_03_[1]);
+            }
+        }
+    }
+
+    private void AffterTutorial04()
+    {
+        if (Tutorial.tutorial04Complet_)
+        {
+            Tutorial.tutorial04Complet_ = false;
+            stageActive_ = stringStageMainMenu;
+            ChangeStage(mainMenu_[0], mainMenu_[0]);
+            MenuController.returMenu_ = true;
+        }
+    }
+
     private void LevelUPStage01()
     {
         if(wormDeath_ == true || butterflyDeath_ == true)
@@ -154,7 +332,10 @@ public class GameController : MonoBehaviour
             if (timeChangeStage_ >= maxTimeChangeStage_)
             {
                 timeChangeStage_ = 0;
-                ChangeStage(stage_02_[0], stage_02_[1]);
+                stageActive_ = stringStageTutorial;
+                playTutorial02_ = true;
+                stage_01_[0].SetActive(false);
+                stage_01_[1].SetActive(false);
             }
         }
 
@@ -163,8 +344,54 @@ public class GameController : MonoBehaviour
             if (timeChangeStage_ >= (maxTimeChangeStage_ + 3.5f))
             {
                 timeChangeStage_ = 0;
-                ChangeStage(stage_02_[0], stage_02_[1]);
+                stageActive_ = stringStageTutorial;
+                playTutorial02_ = true;
+                stage_01_[0].SetActive(false);
+                stage_01_[1].SetActive(false);
             }
+        }
+    }
+
+    private void GameOver()
+    {
+        if(PlayerController.eaglePlayerDeath_ == true)
+        {
+            timeChangeStage_ += Time.deltaTime;
+            Points _points = GetComponent<Points>();
+
+            if(_points.points_ > PlayerPrefs.GetFloat("points", 0))
+            {
+                PlayerPrefs.SetFloat("points", _points.points_);
+                PlayerPrefs.Save();
+            }
+
+            if (timeChangeStage_ >= (maxTimeChangeStage_ + 2f))
+            {
+                PlayerController.eaglePlayerDeath_ = false;
+                timeChangeStage_ = 0;
+                stageActive_ = stringStageTutorial;
+                playTutorial04_ = true;
+                stage_03_[0].SetActive(false);
+                stage_03_[1].SetActive(false);
+            }
+        }
+    }
+
+    private void LevelUPStage02()
+    {
+        if (Eagle_stage_02.grabFrog_ == true)
+        {
+            timeChangeStage_ += Time.deltaTime;
+            playerFrogStage_02.SetActive(false);
+        }
+
+        if (timeChangeStage_ >= (maxTimeChangeStage_ - 1f))
+        {
+            timeChangeStage_ = 0;
+            stageActive_ = stringStageTutorial;
+            playTutorial03_ = true;
+            stage_02_[0].SetActive(false);
+            stage_02_[1].SetActive(false);
         }
     }
 
@@ -253,6 +480,7 @@ public class GameController : MonoBehaviour
             frog_.SetActive(false);
             frogEatButterfly_.SetActive(true);
             light_.SetActive(false);
+            plant_.SetActive(false);
         }
     }
 
@@ -266,6 +494,7 @@ public class GameController : MonoBehaviour
         {
             if (!wind_)
             {
+                UIAlertWind_.SetActive(false);
                 timeWind_ += Time.deltaTime;
             }
             else
@@ -276,6 +505,7 @@ public class GameController : MonoBehaviour
             if (timeWind_ >= (couldownTimeWind_ - 1))
             {
                 UIAlertWind_.SetActive(true);
+                Tutorial.WindTutor_ = true;
                 playSoundwind_ = true;
             }
 
@@ -290,6 +520,8 @@ public class GameController : MonoBehaviour
             {
                 durationTimeWind_ = Random.Range(3, 6);
                 UIAlertWind_.SetActive(false);
+                Tutorial.WindTutor_ = false;
+                Tutorial.tutorView_ = 1;
                 durationWind_ = 0;
                 wind_ = false;
             }
@@ -326,6 +558,7 @@ public class GameController : MonoBehaviour
             SpawnButterfly();
             SpawnEagle();
             CheckRangeFrogPlayerAndButterfly();
+            LevelUPStage02();
         }
     }
 
@@ -375,7 +608,6 @@ public class GameController : MonoBehaviour
         {
             spawnTimeEagle_01_ += Time.deltaTime;
             spawnTimeEagle_02_ += Time.deltaTime;
-            spawnTimeEagle_03_ += Time.deltaTime;
             if (spawnTimeEagle_01_ >= couldownSpawnTimeEagle_01_)
             {
                 couldownSpawnTimeEagle_01_ = Random.Range(0.5f, 1.5f);
@@ -385,16 +617,9 @@ public class GameController : MonoBehaviour
 
             if (spawnTimeEagle_02_ >= couldownSpawnTimeEagle_02_)
             {
-                couldownSpawnTimeEagle_02_ = Random.Range(0.5f, 1.5f);
+                couldownSpawnTimeEagle_02_ = Random.Range(0.8f, 2.5f);
                 eagleInstaciated_.Add(Instantiate(eaglePrefab_, spawnEaglePoints_[Random.Range(0, spawnEaglePoints_.Length)].localPosition, Quaternion.identity, stage_02_[0].transform.GetChild(0).transform.parent));
                 spawnTimeEagle_02_ = 0;
-            }
-
-            if (spawnTimeEagle_03_ >= couldownSpawnTimeEagle_03_)
-            {
-                couldownSpawnTimeEagle_03_ = Random.Range(0.5f, 1.5f);
-                eagleInstaciated_.Add(Instantiate(eaglePrefab_, spawnEaglePoints_[Random.Range(0, spawnEaglePoints_.Length)].localPosition, Quaternion.identity, stage_02_[0].transform.GetChild(0).transform.parent));
-                spawnTimeEagle_03_ = 0;
             }
         }
     }
@@ -411,7 +636,6 @@ public class GameController : MonoBehaviour
         {
             //Stage 03
             SpawnGrounds();
-            CheckPositionGround();
         }
     }
 
@@ -421,19 +645,8 @@ public class GameController : MonoBehaviour
         if(spawnTimeScenery >= couldownSpawnTimeScenery)
         {
             groundsInstaciatedDown_.Add(Instantiate(grounds_[Random.Range(0, grounds_.Count)], spawnPointSceneryDown));
-            groundsInstaciatedUP_.Add(Instantiate(grounds_[Random.Range(0, grounds_.Count)], spawnPointSceneryUP));
+            groundsInstaciatedUP_.Add(Instantiate(galhos_[Random.Range(0, galhos_.Count)], spawnPointSceneryUP));
             spawnTimeScenery = 0;
-        }
-    }
-
-    private void CheckPositionGround()
-    {
-        if(groundsInstaciatedUP_.Count > 0)
-        {
-            for(int i = 0; i <= groundsInstaciatedUP_.Count; i++)
-            {
-                groundsInstaciatedUP_[i].transform.rotation = Quaternion.Euler(0, 0, 180);
-            }
         }
     }
 

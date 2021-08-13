@@ -4,19 +4,33 @@ using UnityEngine;
 
 public class AudioController : MonoBehaviour
 {
-    [Header("Sound ambient")]
-    [SerializeField] private AudioSource soundAmbient01_;
-    [SerializeField] private AudioSource soundAmbient02_;
+    [Header("Sound stage 01")]
+    [SerializeField] private AudioClip[] soundStage01_;
+
+    [Header("Sound stage 02")]
+    [SerializeField] private AudioClip[] soundStage02_;
+
+    [Header("Sound stage 03")]
+    [SerializeField] private AudioClip[] soundStage03_;
+
+    [Header("Sound Tutorial")]
+    [SerializeField] private AudioClip[] soundTutorial_;
+
+    [Header("Sound Main Menu")]
+    [SerializeField] private AudioClip[] soundMainMenu_;
+
+    [Header("Audio Source")]
+    [SerializeField] private AudioSource[] audioSources_;
+    [SerializeField] private AudioSource sourcesFX_;
 
     [Header("Sound FX")]
-    [SerializeField] private AudioSource soundFx_;
-
-    [Header("List ambient sound")]
-    [SerializeField] private AudioClip[] soundAmbientList_;
-    [SerializeField] private AudioClip[] soundFxtList_;
+    [SerializeField] private AudioClip soundFx_;
 
     [Header("tag gamecontroller")]
     [SerializeField] private string tagGameController_;
+
+    [Header("Main menu")]
+    [SerializeField] private GameObject mainMenu_;
 
     private GameController gameController_;
 
@@ -33,35 +47,65 @@ public class AudioController : MonoBehaviour
 
     private void Update()
     {
+        Return();
+        if (MenuController.returMenu_)
+            return;
+
+        if (MenuController.pauseGame_)
+            return;
+
+        tutorial();
+        MainMenu();
+
         Stage01();
         Stage02();
         Stage03();
+    }
+
+    private void Return()
+    {
+        if (MenuController.returMenu_)
+        {
+            audioSources_[0].clip = null;
+            audioSources_[1].clip = null;
+
+            audioSources_[0].Stop();
+            audioSources_[1].Stop();
+
+            sourcesFX_.clip = null;
+            sourcesFX_.Stop();
+        }
     }
 
     private void Stage01()
     {
         if(gameController_.stageActive_ == GameController.stringStage_01)
         {
-            soundAmbient01_.clip = soundAmbientList_[0];
-            soundAmbient02_.clip = soundAmbientList_[1];
+            audioSources_[0].clip = soundStage01_[0];
+            audioSources_[1].clip = soundStage01_[1];
 
-            soundFx_.clip = soundFxtList_[0];
+            if (!audioSources_[0].isPlaying)
+                audioSources_[0].Play();
 
-            if (gameController_.playSoundwind_)
+            if (!audioSources_[1].isPlaying)
+                audioSources_[1].Play();
+
+
+            if (gameController_.wind_)
             {
-                if(soundFx_.isPlaying == false)
+                if (sourcesFX_.clip == null)
                 {
-                    soundFx_.volume = 0.7f;
-                    soundFx_.Play();
+                    sourcesFX_.clip = soundFx_;
+                }
+
+                if (!sourcesFX_.isPlaying)
+                {
+                    sourcesFX_.Play();
                 }
             }
             else
             {
-                soundFx_.volume -= Time.deltaTime;
-                if(soundFx_.volume == 0f)
-                {
-                    soundFx_.Stop();
-                }
+                sourcesFX_.Stop();
             }
         }
     }
@@ -70,7 +114,14 @@ public class AudioController : MonoBehaviour
     {
         if (gameController_.stageActive_ == GameController.stringStage_02)
         {
-            soundFx_.Stop();
+            audioSources_[0].clip = soundStage02_[0];
+            audioSources_[1].clip = soundStage02_[1];
+
+            if (!audioSources_[0].isPlaying)
+                audioSources_[0].Play();
+
+            if (!audioSources_[1].isPlaying)
+                audioSources_[1].Play();
         }
     }
 
@@ -78,7 +129,42 @@ public class AudioController : MonoBehaviour
     {
         if (gameController_.stageActive_ == GameController.stringStage_03)
         {
-            soundFx_.Stop();
+            audioSources_[0].clip = soundStage03_[0];
+            audioSources_[1].clip = soundStage03_[1];
+
+            if (!audioSources_[0].isPlaying)
+                audioSources_[0].Play();
+
+            if (!audioSources_[1].isPlaying)
+                audioSources_[1].Play();
+        }
+    }
+
+    private void MainMenu()
+    {
+        if (gameController_.stageActive_ == GameController.stringStageMainMenu)
+        {
+            Debug.Log("sound menu");
+            audioSources_[0].clip = soundMainMenu_[0];
+            audioSources_[1].clip = null;
+
+            if (!audioSources_[0].isPlaying)
+                audioSources_[0].Play();
+        }
+    }
+
+    private void tutorial()
+    {
+        if (gameController_.stageActive_ == GameController.stringStageTutorial)
+        {
+            audioSources_[0].clip = soundTutorial_[0];
+            audioSources_[1].clip = null;
+
+            if (!audioSources_[0].isPlaying)
+                audioSources_[0].Play();
+
+            if (sourcesFX_.isPlaying)
+                sourcesFX_.Stop();
         }
     }
 }

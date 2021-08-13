@@ -83,6 +83,9 @@ public class Butterfly : MonoBehaviour
     {
         if (clickButterfly_ && gameController_.range_ && LeaftWater.stayLeaftWater_)
         {
+            Points _points = GameObject.FindGameObjectWithTag("GameController").GetComponent<Points>();
+            _points.points_ += 200;
+
             gameController_.butterflyInstaciated_.Remove(gameObject);
             Destroy(gameObject);
         }
