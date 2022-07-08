@@ -1,2 +1,2 @@
 # life-cycle
-Jogo para uma game jam
+Jogo desenvolvido para uma game jam.
